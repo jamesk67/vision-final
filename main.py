@@ -1,5 +1,5 @@
 from utils import argParser
-from dataloader import CifarLoader
+from dataloader import BirdLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import models
@@ -92,7 +92,7 @@ def main():
     args = argParser()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
-    cifarLoader = CifarLoader(args)
+    cifarLoader = BirdLoader(args)
     net = args.model()
     net = net.to(device)
     #print('The log is recorded in ')
