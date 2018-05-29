@@ -58,13 +58,16 @@ class CustomDatasetFromImages(Dataset):
 
     def __getitem__(self, index):
         # Get image name from the pandas df
+        print(self.image_arr[index])
         single_image_name = self.image_arr[index]
         # Open image
         img_as_img = Image.open(single_image_name)
 
         # Transform image to tensor
         img_as_tensor = self.to_tensor(img_as_img)
-
+        # print("EH")
+		cNorm = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+		img_as_tensor = cNorm(img_as_tensor)
         # Get label(class) of the image based on the cropped pandas column
         single_image_label = self.label_arr[index]
 

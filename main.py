@@ -13,9 +13,8 @@ def train(net, dataloader, optimizer, criterion, epoch, device):
     running_loss = 0.0
     total_loss = 0.0
 
-    for i, data in enumerate(dataloader.trainloader, 0):
+    for i, (inputs, labels) in enumerate(dataloader):
         # get the inputs
-        inputs, labels = data
         inputs = inputs.to(device)
         labels = labels.to(device)
 
@@ -89,13 +88,13 @@ def main():
     print(device)
     #cifarLoader = CifarLoader(args)
     custom_mnist_from_images =  \
-        CustomDatasetFromImages('../data/mnist_labels.csv')
+        CustomDatasetFromImages('./labels.csv')
 
     cifarLoader = torch.utils.data.DataLoader(dataset=custom_mnist_from_images,
                                                     batch_size=10,
                                                     shuffle=False)
     custom_mnist_from_imagesTesting =  \
-        CustomDatasetFromImages('../data/mnist_labels2.csv')
+        CustomDatasetFromImages('./sample.csv')
 
     cifarLoaderTesting = torch.utils.data.DataLoader(dataset=custom_mnist_from_imagesTesting,
                                                     batch_size=10,
@@ -110,9 +109,10 @@ def main():
 
     for epoch in range(args.epochs):  # loop over the dataset multiple times
         net.adjust_learning_rate(optimizer, epoch, args)
-        train(net, cifarLoader, optimizer, criterion, epoch, device)
+        # train(net, cifarLoader, optimizer, criterion, epoch, device)
+        train(net, cifarLoaderTesting, optimizer, criterion, epoch, device)
         if epoch % 1 == 0: # Comment out this part if you want a faster training
-            test(net, cifarLoader, device, 'Train')
+            # test(net, cifarLoader, device, 'Train')
             test(net, cifarLoaderTesting, device, 'Test')
 
     print("done testing")
