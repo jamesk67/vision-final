@@ -1,6 +1,7 @@
 from utils import argParser
-from dataloader import CifarLoader
 from dataloader import CustomDatasetFromImages
+from dataloader import BirdLoader
+
 import matplotlib.pyplot as plt
 import numpy as np
 import models
@@ -87,6 +88,7 @@ def main():
     args = argParser()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
+
     #cifarLoader = CifarLoader(args)
     custom_mnist_from_images =  \
         CustomDatasetFromImages('../data/mnist_labels.csv')
@@ -100,6 +102,8 @@ def main():
     cifarLoaderTesting = torch.utils.data.DataLoader(dataset=custom_mnist_from_imagesTesting,
                                                     batch_size=10,
                                                     shuffle=False)
+
+    cifarLoader = BirdLoader(args)
     net = args.model()
     net = net.to(device)
     #print('The log is recorded in ')

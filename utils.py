@@ -15,7 +15,7 @@ def model_class(class_name):
 
 
 def argParser():
-	parser = argparse.ArgumentParser(description='PyTorch Homework')
+	parser = argparse.ArgumentParser(description='PyTorch Vision Final')
 	parser.add_argument('--lr', default=0.01, type=float)
 	parser.add_argument('--batchSize', default=4, type=int)
 	parser.add_argument('--epochs', default=1, type=int)
