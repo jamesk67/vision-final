@@ -1,5 +1,6 @@
 from utils import argParser
 from dataloader import CifarLoader
+from dataloader import CustomDatasetFromImages
 import matplotlib.pyplot as plt
 import numpy as np
 import models
@@ -47,16 +48,11 @@ def train(net, dataloader, optimizer, criterion, epoch, device):
           (total_loss / i))
 
 
-def test(net, dataloader, device, tag=''):
+def test(net, dataTestLoader, device, tag=''):
     correct = 0
     total = 0
-    if tag == 'Train':
-        dataTestLoader = dataloader.trainloader
-    else:
-        dataTestLoader = dataloader.testloader
     with torch.no_grad():
-        for data in dataTestLoader:
-            images, labels = data
+        for i, (images, labels) in enumerate(dataTestLoader):
             images = images.to(device)
             labels = labels.to(device)
             outputs = net(images)
@@ -70,8 +66,7 @@ def test(net, dataloader, device, tag=''):
     class_correct = list(0. for i in range(10))
     class_total = list(0. for i in range(10))
     with torch.no_grad():
-        for data in dataTestLoader:
-            images, labels = data
+        for i, (images, labels) in enumerate(dataTestLoader):
             images = images.to(device)
             labels = labels.to(device)
             outputs = net(images)
@@ -92,7 +87,19 @@ def main():
     args = argParser()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
-    cifarLoader = CifarLoader(args)
+    #cifarLoader = CifarLoader(args)
+    custom_mnist_from_images =  \
+        CustomDatasetFromImages('../data/mnist_labels.csv')
+
+    cifarLoader = torch.utils.data.DataLoader(dataset=custom_mnist_from_images,
+                                                    batch_size=10,
+                                                    shuffle=False)
+    custom_mnist_from_imagesTesting =  \
+        CustomDatasetFromImages('../data/mnist_labels2.csv')
+
+    cifarLoaderTesting = torch.utils.data.DataLoader(dataset=custom_mnist_from_imagesTesting,
+                                                    batch_size=10,
+                                                    shuffle=False)
     net = args.model()
     net = net.to(device)
     #print('The log is recorded in ')
@@ -106,7 +113,7 @@ def main():
         train(net, cifarLoader, optimizer, criterion, epoch, device)
         if epoch % 1 == 0: # Comment out this part if you want a faster training
             test(net, cifarLoader, device, 'Train')
-            test(net, cifarLoader, device, 'Test')
+            test(net, cifarLoaderTesting, device, 'Test')
 
     print("done testing")
     #print('The log is recorded in ')
