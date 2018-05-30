@@ -17,9 +17,9 @@ class BaseModel(nn.Module):
         #st = 'logs/' + st
         #self.logFile = open(st, 'w+')
 
-    def log(self, str):
-        print(str)
-        self.logFile.write(str + '\n')
+    #def log(self, str):
+     #   print(str)
+      #  self.logFile.write(str + '\n')
 
     def criterion(self):
         return nn.CrossEntropyLoss()
