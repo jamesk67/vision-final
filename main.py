@@ -1,18 +1,19 @@
 from utils import argParser
-from dataloader import BirdLoader
+#from dataloader import BirdLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import models
 import torch
+import torchvision
+import torchvision.transforms as transforms
 import pdb
-
 
 def train(net, dataloader, optimizer, criterion, epoch, device):
 
     running_loss = 0.0
     total_loss = 0.0
 
-    for i, data in enumerate(dataloader.trainloader, 0):
+    for i, data in enumerate(dataloader, 0):
         # get the inputs
         inputs, labels = data
         inputs = inputs.to(device)
@@ -30,7 +31,8 @@ def train(net, dataloader, optimizer, criterion, epoch, device):
         #for i in range(labels.size()[0]):
          #   rlabels[i, labels[i].item()] = 1
         #labels = rlabels
-
+        #print(outputs.size())
+        #print(labels.size())
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -46,14 +48,16 @@ def train(net, dataloader, optimizer, criterion, epoch, device):
     print('Final Summary:   loss: %.3f' %
           (total_loss / i))
 
-
 def test(net, dataloader, device, tag=''):
     correct = 0
     total = 0
+    dataTestLoader = dataloader
+    '''
     if tag == 'Train':
         dataTestLoader = dataloader.trainloader
     else:
         dataTestLoader = dataloader.testloader
+    '''
     with torch.no_grad():
         for data in dataTestLoader:
             images, labels = data
@@ -83,7 +87,7 @@ def test(net, dataloader, device, tag=''):
                 class_total[label] += 1
 
 
-    for i in range(10):
+    for i in range(555):
       print('%s Accuracy of %5s : %2d %%' % (
        tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
 
@@ -92,7 +96,18 @@ def main():
     args = argParser()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
-    cifarLoader = BirdLoader(args)
+    transform = transforms.Compose(
+            [
+             # TODO: Add data augmentations here
+             transforms.Resize((96, 96)),
+             transforms.RandomVerticalFlip(),
+             transforms.ToTensor(),
+             #transforms.ColorJitter(),
+             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+             ])
+    trainset = torchvision.datasets.ImageFolder('./newtrain', transform=transform)
+
+    cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
     net = args.model()
     net = net.to(device)
     #print('The log is recorded in ')
@@ -105,10 +120,14 @@ def main():
         net.adjust_learning_rate(optimizer, epoch, args)
         train(net, cifarLoader, optimizer, criterion, epoch, device)
         if epoch % 1 == 0: # Comment out this part if you want a faster training
-            test(net, cifarLoader, device, 'Train')
-            test(net, cifarLoader, device, 'Test')
+           test(net, cifarLoader, device, 'Train')
+          #  test(net, cifarLoader, device, 'Test')
 
+
+    #test(net)
     print("done testing")
+    #net.save_state_dict('mytraining.pt')
+    #torch.save(net.state_dict(), './models')
     #print('The log is recorded in ')
     #print(net.logFile.name)
 

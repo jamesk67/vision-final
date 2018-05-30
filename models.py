@@ -26,7 +26,8 @@ class BaseModel(nn.Module):
         #return nn.MSELoss()
 
     def optimizer(self):
-        return optim.SGD(self.parameters(), lr=0.001)
+        return optim.Adam(self.parameters())
+        #return optim.SGD(self.parameters(), lr=0.001)
 
     def adjust_learning_rate(self, optimizer, epoch, args):
         lr = args.lr  # TODO: Implement decreasing learning rate's rules
@@ -81,15 +82,15 @@ class CoolNet(BaseModel):
         self.conv1 = nn.Conv2d(3, 27, 3)
         self.conv2 = nn.Conv2d(27, 16, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(7056, 3000)
+        self.fc2 = nn.Linear(3000, 1500)
+        self.fc3 = nn.Linear(1500, 555)
 
     def forward(self, x):
         # TODO: Implement forward pass for CoolNet
         x = F.max_pool2d(F.relu(self.conv1(x)), 2)
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = x.view(-1, 16 * 5 * 5)
+        x = x.view(x.size()[0], 7056)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
