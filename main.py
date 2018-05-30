@@ -1,5 +1,5 @@
 from utils import argParser
-#from dataloader import BirdLoader
+from dataloader import BirdLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import models
@@ -7,6 +7,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 import pdb
+import os
 from PIL import Image
 
 def log(logFile, s):
@@ -97,11 +98,12 @@ def test(net, dataloader, device, logFile, tag=''):
        tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
 
 def output(net, outputFile, transforms):
-    for file in os.scandir("./test"):
-        image = Image.open(file)
-        image = transforms(image)
-        output = net(image)
-        log(outputFile, file + "," + str(output))
+	directory = os.fsencode('test')
+	for file in os.listdir(directory):
+		image = Image.open(file)
+		image = transforms(image)
+		output = net(image)
+		log(outputFile, file + "," + str(output))
 
 def main():
 
@@ -117,37 +119,9 @@ def main():
              #transforms.ColorJitter(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
              ])
+    print(os.path.isdir('newtrain'))
     trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform) # breaks when trying to open folder via PIL Image.open(), says OSError
     # cannot identify image file <_io.BufferedReader name= on Windows Machine which has GPU
-
-    '''
-    C:\Users\james\Documents\vision-final>python main.py --model CoolNet --logfile testSmallCoolNetLog.txt --modelfile smallCNet.pth --outputfile outputx.csv
-Traceback (most recent call last):
-  File "main.py", line 156, in <module>
-    main()
-  File "main.py", line 136, in main
-    train(net, cifarLoader, optimizer, criterion, epoch, device, logFile)
-  File "main.py", line 21, in train
-    for i, data in enumerate(dataloader, 0):
-  File "C:\Users\james\Anaconda3\lib\site-packages\torch\utils\data\dataloader.py", line 286, in __next__
-    return self._process_next_batch(batch)
-  File "C:\Users\james\Anaconda3\lib\site-packages\torch\utils\data\dataloader.py", line 307, in _process_next_batch
-    raise batch.exc_type(batch.exc_msg)
-OSError: Traceback (most recent call last):
-  File "C:\Users\james\Anaconda3\lib\site-packages\torch\utils\data\dataloader.py", line 57, in _worker_loop
-    samples = collate_fn([dataset[i] for i in batch_indices])
-  File "C:\Users\james\Anaconda3\lib\site-packages\torch\utils\data\dataloader.py", line 57, in <listcomp>
-    samples = collate_fn([dataset[i] for i in batch_indices])
-  File "C:\Users\james\Anaconda3\lib\site-packages\torchvision\datasets\folder.py", line 101, in __getitem__
-    sample = self.loader(path)
-  File "C:\Users\james\Anaconda3\lib\site-packages\torchvision\datasets\folder.py", line 147, in default_loader
-    return pil_loader(path)
-  File "C:\Users\james\Anaconda3\lib\site-packages\torchvision\datasets\folder.py", line 129, in pil_loader
-    img = Image.open(f)
-  File "C:\Users\james\Anaconda3\lib\site-packages\PIL\Image.py", line 2585, in open
-    % (filename if filename else fp))
-OSError: cannot identify image file <_io.BufferedReader name='newtrain\\199\\._0c3ac0d5625e48b69e09daf6fdf25c36.jpg'>
-    '''
 
     cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
     outputFile = open(args.outputfile, 'w+')

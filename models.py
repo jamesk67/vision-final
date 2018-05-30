@@ -31,8 +31,8 @@ class BaseModel(nn.Module):
 
     def adjust_learning_rate(self, optimizer, epoch, args):
         lr = args.lr  # TODO: Implement decreasing learning rate's rules
-        #if (epoch + 1) % 50 == 0:
-         #   lr = lr * 0.1
+        if (epoch + 1) % 50 == 0:
+            lr = lr * 0.1
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
