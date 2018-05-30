@@ -99,8 +99,8 @@ def main():
     transform = transforms.Compose(
             [
              # TODO: Add data augmentations here
+             transforms.RandomHorizontalFlip(),
              transforms.Resize((96, 96)),
-             transforms.RandomVerticalFlip(),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
