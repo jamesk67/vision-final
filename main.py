@@ -118,19 +118,20 @@ def main():
     #print(device)
     transform = transforms.Compose(
             [
-             # TODO: Add data augmentations here
+             # TODO: Use these data augmentations later
              transforms.RandomHorizontalFlip(),
-             transforms.Resize((96, 96)),
+             transforms.Resize((400, 400)),
+             transforms.RandomCrop((244, 244)),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
-             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+             transforms.Normalize((mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]))
              ])
     #print(os.path.isdir('newtrain'))
-    #trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform) # breaks when trying to open folder via PIL Image.open(), says OSError
-    # cannot identify image file <_io.BufferedReader name= on Windows Machine which has GPU
+    #trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform)
 
     #cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
-    cifarLoader = BirdLoader(args)
+    cifarLoader = BirdLoader(args) # increase batch size to 32
     print('BirdLoader initialized')
     outputFile = open(args.outputfile, 'w+')
     logFile = open(args.logfile, 'w+')
