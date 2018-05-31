@@ -124,8 +124,8 @@ def main():
              transforms.RandomCrop((244, 244)),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
-             transforms.Normalize((mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]))
+             transforms.Normalize((0.485, 0.456, 0.406),
+                                 (0.229, 0.224, 0.225))
              ])
     #print(os.path.isdir('newtrain'))
     #trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform)
