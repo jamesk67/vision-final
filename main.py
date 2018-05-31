@@ -57,7 +57,7 @@ def train(net, dataloader, optimizer, criterion, epoch, device, logFile):
 def test(net, dataloader, device, logFile, tag=''):
     correct = 0
     total = 0
-    dataTestLoader = dataloader
+    dataTestLoader = dataloader.trainloader
     '''
     if tag == 'Train':
         dataTestLoader = dataloader.trainloader
@@ -70,7 +70,7 @@ def test(net, dataloader, device, logFile, tag=''):
             images = images.to(device)
             labels = labels.to(device)
             outputs = net(images)
-            _, predicted = torch.max(outputs.data, 0)
+            _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
@@ -85,25 +85,31 @@ def test(net, dataloader, device, logFile, tag=''):
             images = images.to(device)
             labels = labels.to(device)
             outputs = net(images)
-            _, predicted = torch.max(outputs, 0)
+            _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
             for i in range(len(labels)):
                 label = labels[i]
                 class_correct[label] += c[i].item()
                 class_total[label] += 1
 
-
+    #print(class_total)
+    #print(class_total[403])
     for i in range(555):
-      log(logFile, '%s Accuracy of %5s : %2d %%' % (
-       tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
+        log(logFile, '%s Accuracy of %5s : %2d %%' % (
+            tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
 
-def output(net, outputFile, transforms):
-	directory = os.fsencode('test')
-	for file in os.listdir(directory):
-		image = Image.open(file)
-		image = transforms(image)
-		output = net(image)
-		log(outputFile, file + "," + str(output))
+def output(net, outputFile, transforms, device):
+    directory = os.fsencode('test\\')
+    log(outputFile, "path,class")
+    for file in os.listdir(directory):
+        image = Image.open('test\\' + file.decode())
+        image = transforms(image)
+        image.unsqueeze_(0)
+        image = image.to(device)
+        output = net(image)
+        _, predicted = torch.max(output.data, 1)
+        #print(str(predicted[0].item()))
+        log(outputFile, 'test/' + file.decode() + ',' + str(predicted[0].item()))
 
 def main():
 
@@ -119,11 +125,13 @@ def main():
              #transforms.ColorJitter(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
              ])
-    print(os.path.isdir('newtrain'))
-    trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform) # breaks when trying to open folder via PIL Image.open(), says OSError
+    #print(os.path.isdir('newtrain'))
+    #trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform) # breaks when trying to open folder via PIL Image.open(), says OSError
     # cannot identify image file <_io.BufferedReader name= on Windows Machine which has GPU
 
-    cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+    #cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+    cifarLoader = BirdLoader(args)
+    print('BirdLoader initialized')
     outputFile = open(args.outputfile, 'w+')
     logFile = open(args.logfile, 'w+')
     net = args.model()
@@ -136,14 +144,14 @@ def main():
 
     for epoch in range(args.epochs):  # loop over the dataset multiple times
         net.adjust_learning_rate(optimizer, epoch, args)
-        train(net, cifarLoader, optimizer, criterion, epoch, device, logFile)
-        if epoch % 1 == 0: # Comment out this part if you want a faster training
-           test(net, cifarLoader, device, logFile, 'Train')
+        train(net, cifarLoader.trainloader, optimizer, criterion, epoch, device, logFile)
+        #if epoch % 1 == 0: # Comment out this part if you want a faster training
+            #test(net, cifarLoader, device, logFile, 'Train')
           #  test(net, cifarLoader, device, 'Test')
 
-    output(net, outputFile, transforms.Compose([transforms.Resize((96, 96)), transforms.ToTensor()]))
+    output(net, outputFile, transforms.Compose([transforms.Resize((96, 96)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), device)
     #test(net)
-    #print("done testing")
+    print("done testing")
     #net.save_state_dict('mytraining.pt')
     torch.save(net.state_dict(), args.modelfile)
     log(logFile, 'The log is recorded in ')
@@ -152,8 +160,8 @@ def main():
     log(logFile, args.outputfile)
     log(logFile, 'The model is recorded in ')
     log(logFile, args.modelfile)
-    close(logFile)
-    close(outputFile)
+    logFile.close()
+    outputFile.close()
 
 if __name__ == '__main__':
     main()

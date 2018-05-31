@@ -49,19 +49,21 @@ class BirdLoader(object):
 	def __init__(self, args):
 		super(BirdLoader, self).__init__()
 		transform = transforms.Compose(
-		    [
-		     # TODO: Add data augmentations here
-		     transforms.ToTensor(),
-		     #transforms.ColorJitter(),
-		     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-		     ])
+            [
+             # TODO: Add data augmentations here
+             transforms.RandomHorizontalFlip(),
+             transforms.Resize((96, 96)),
+             transforms.ToTensor(),
+             #transforms.ColorJitter(),
+             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+             ])
 
-		trainset = CustomDatasetFromImages('labels.csv', transform)
+		trainset = BirdDataset('labels.csv', transform)
         #								   root_dir='data/train')
         #trainset = torchvision.datasets.ImageFolder('./newtrain', transform=transforms)
 		#trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
 		 #                                       download=True, transform=transform)
-		self.trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=True, num_workers=2)
+		self.trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
 
         #testset = CustomDatasetFromImages(csv_path='data/test/samples.csv',
         	        #                      root_dir='data/test')
@@ -73,7 +75,7 @@ class BirdLoader(object):
 		 #                                        shuffle=False, num_workers=2)
 
         #classfile = open('names.txt', 'r')
-		self.classes = array('i',(i for i in range(0,555)))
+		self.classes = array.array('i',(i for i in range(0,555)))
         #classfile.close()
 		#self.classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 		
