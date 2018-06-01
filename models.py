@@ -12,7 +12,7 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         #if not os.path.exists('logs'):
          #   os.makedirs('logs')
-        ts = time.time()
+        #ts = time.time()
         #st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H:%M:%S_log.txt')
         #st = 'logs/' + st
         #self.logFile = open(st, 'w+')
@@ -26,7 +26,11 @@ class BaseModel(nn.Module):
         #return nn.MSELoss()
 
     def optimizer(self):
-        return optim.Adam(self.parameters())
+        params = []
+        for param in self.parameters():
+            if param.requires_grad:
+                params.append(param)
+        return optim.Adam(params)
         #return optim.SGD(self.parameters(), lr=0.001)
 
     def adjust_learning_rate(self, optimizer, epoch, args):
@@ -95,3 +99,162 @@ class CoolNet(BaseModel):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+class AlexNetU(BaseModel):
+    def __init__(self):
+        super(AlexNetU, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=False)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class AlexNet0(BaseModel):
+    def __init__(self):
+        super(AlexNet0, self).__init__()
+        self = torchmodels.alexnet(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+
+    def forward(self, x):
+        return self.forward(x)
+
+class AlexNet1(BaseModel):
+    def __init__(self):
+        super(AlexNet1, self).__init__()
+        self = torchmodels.alexnet(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+
+    def forward(self, x):
+        return self.forward(x)
+
+class AlexNet2(BaseModel):
+    def __init__(self):
+        super(AlexNet2, self).__init__()
+        self = torchmodels.alexnet(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+
+    def forward(self, x):
+        return self.forward(x)
+
+class AlexNet3(BaseModel):
+    def __init__(self):
+        super(AlexNet3, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class AlexNet4(BaseModel):
+    def __init__(self):
+        super(AlexNet4, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+        self.model.features[12] = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.model.features[11] = nn.ReLU(inplace=True)
+        self.model.features[10] = nn.Conv2d(256, 256, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+        
+class AlexNet5(BaseModel):
+    def __init__(self):
+        super(AlexNet5, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+        self.model.features[12] = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.model.features[11] = nn.ReLU(inplace=True)
+        self.model.features[10] = nn.Conv2d(256, 256, kernel_size=3, padding=1)
+        self.model.features[9] = nn.ReLU(inplace=True)
+        self.model.features[8] = nn.Conv2d(384, 256, kernel_size=3, padding=1)
+
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class AlexNet6(BaseModel):
+    def __init__(self):
+        super(AlexNet6, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+        self.model.features[12] = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.model.features[11] = nn.ReLU(inplace=True)
+        self.model.features[10] = nn.Conv2d(256, 256, kernel_size=3, padding=1)
+        self.model.features[9] = nn.ReLU(inplace=True)
+        self.model.features[8] = nn.Conv2d(384, 256, kernel_size=3, padding=1)
+        self.model.features[7] = nn.ReLU(inplace=True)
+        self.model.features[6] = nn.Conv2d(192, 384, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class AlexNet7(BaseModel):
+    def __init__(self):
+        super(AlexNet6, self).__init__()
+        self.model = torchmodels.alexnet(pretrained=True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[4] = nn.Linear(4096, 4096)
+        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
+        self.model.features[12] = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.model.features[11] = nn.ReLU(inplace=True)
+        self.model.features[10] = nn.Conv2d(256, 256, kernel_size=3, padding=1)
+        self.model.features[9] = nn.ReLU(inplace=True)
+        self.model.features[8] = nn.Conv2d(384, 256, kernel_size=3, padding=1)
+        self.model.features[7] = nn.ReLU(inplace=True)
+        self.model.features[6] = nn.Conv2d(192, 384, kernel_size=3, padding=1)
+        self.model.features[5] = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.model.features[4] = nn.ReLU(inplace=True)
+        self.model.features[3] = nn.Conv2d(64, 192, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+
+        
+
+
+
+
+

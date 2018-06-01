@@ -6,6 +6,7 @@ import models
 import torch
 import torchvision
 import torchvision.transforms as transforms
+import torch.optim as optim
 import pdb
 import os
 from PIL import Image
@@ -99,10 +100,10 @@ def test(net, dataloader, device, logFile, tag=''):
             tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
 
 def output(net, outputFile, transforms, device):
-    directory = os.fsencode('test\\')
+    directory = os.fsencode('test/')
     log(outputFile, "path,class")
     for file in os.listdir(directory):
-        image = Image.open('test\\' + file.decode())
+        image = Image.open('test/' + file.decode())
         image = transforms(image)
         image.unsqueeze_(0)
         image = image.to(device)
@@ -121,7 +122,7 @@ def main():
              # TODO: Use these data augmentations later
              transforms.RandomHorizontalFlip(),
              transforms.Resize((400, 400)),
-             transforms.RandomCrop((244, 244)),
+             transforms.RandomCrop((224, 224)),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
              transforms.Normalize((0.485, 0.456, 0.406),
@@ -141,6 +142,12 @@ def main():
     #print(net.logFile.name)
 
     criterion = net.criterion().to(device)
+    params = list(net.parameters())
+
+    for p in params:
+        print(p.requires_grad)
+
+    #optimizer = optim.Adam(params)
     optimizer = net.optimizer()
 
     for epoch in range(args.epochs):  # loop over the dataset multiple times
@@ -150,7 +157,10 @@ def main():
             #test(net, cifarLoader, device, logFile, 'Train')
           #  test(net, cifarLoader, device, 'Test')
 
-    output(net, outputFile, transforms.Compose([transforms.Resize((96, 96)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), device)
+    output(net, outputFile, transforms.Compose([transforms.Resize((400, 400)), 
+                            transforms.CenterCrop(224), 
+                            transforms.ToTensor(), 
+                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), device)
     #test(net)
     print("done testing")
     #net.save_state_dict('mytraining.pt')
