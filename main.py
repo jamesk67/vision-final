@@ -9,7 +9,9 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import pdb
 import os
+from torch.autograd import Variable
 from PIL import Image
+import datetime
 
 def log(logFile, s):
     print(s)
@@ -20,17 +22,17 @@ def train(net, dataloader, optimizer, criterion, epoch, device, logFile):
     running_loss = 0.0
     total_loss = 0.0
 
-    for i, data in enumerate(dataloader, 0):
+    for i, (inputs, labels) in enumerate(dataloader, 0):
         # get the inputs
-        inputs, labels = data
-        inputs = inputs.to(device)
-        labels = labels.to(device)
+        #inputs, labels = data
+        inputs = Variable(inputs).to(device)
+        labels = Variable(labels).to(device)
 
         # zero the parameter gradients
         optimizer.zero_grad()
 
         # forward + backward + optimize
-        outputs = net(inputs)
+        outputs = net(inputs).to(device)
 
         # regression tensor for MSELoss, comment out the following four lines
         # to use CrossEntropyLoss
@@ -40,7 +42,7 @@ def train(net, dataloader, optimizer, criterion, epoch, device, logFile):
         #labels = rlabels
         #print(outputs.size())
         #print(labels.size())
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, labels).to(device)
         loss.backward()
         optimizer.step()
 
@@ -54,6 +56,7 @@ def train(net, dataloader, optimizer, criterion, epoch, device, logFile):
 
     log(logFile, 'Final Summary:   loss: %.3f' %
           (total_loss / i))
+    return total_loss / i
 
 def test(net, dataloader, device, logFile, tag=''):
     correct = 0
@@ -66,11 +69,11 @@ def test(net, dataloader, device, logFile, tag=''):
         dataTestLoader = dataloader.testloader
     '''
     with torch.no_grad():
-        for data in dataTestLoader:
-            images, labels = data
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs = net(images)
+        for (images, labels) in dataTestLoader:
+            #images, labels = data
+            images = Variable(images).to(device)
+            labels = Variable(labels).to(device)
+            outputs = net(images).to(device)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -81,11 +84,11 @@ def test(net, dataloader, device, logFile, tag=''):
     class_correct = list(0. for i in range(555))
     class_total = list(0. for i in range(555))
     with torch.no_grad():
-        for data in dataTestLoader:
-            images, labels = data
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs = net(images)
+        for (images, labels) in dataTestLoader:
+            #images, labels = data
+            images = Variable(images).to(device)
+            labels = Variable(labels).to(device)
+            outputs = net(images).to(device)
             _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
             for i in range(len(labels)):
@@ -102,27 +105,28 @@ def test(net, dataloader, device, logFile, tag=''):
 def output(net, outputFile, transforms, device):
     directory = os.fsencode('test/')
     log(outputFile, "path,class")
-    for file in os.listdir(directory):
-        image = Image.open('test/' + file.decode())
-        image = transforms(image)
-        image.unsqueeze_(0)
-        image = image.to(device)
-        output = net(image)
-        _, predicted = torch.max(output.data, 1)
-        #print(str(predicted[0].item()))
-        log(outputFile, 'test/' + file.decode() + ',' + str(predicted[0].item()))
+    with torch.no_grad():
+        for file in os.listdir(directory):
+            image = Image.open('test/' + file.decode())
+            image = transforms(image)
+            image.unsqueeze_(0)
+            output = net(image).to(device)
+            _, predicted = torch.max(output.data, 1)
+            #print(str(predicted[0].item()))
+            log(outputFile, 'test/' + file.decode() + ',' + str(predicted[0].item()))
 
 def main():
 
     args = argParser()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #print(device)
+    #torch.cuda.set_device(1)
+    device = torch.device("cuda:0")
+    #device = torch.device('cpu')
+    print(device)
     transform = transforms.Compose(
             [
              # TODO: Use these data augmentations later
              transforms.RandomHorizontalFlip(),
-             transforms.Resize((400, 400)),
-             transforms.RandomCrop((224, 224)),
+             transforms.RandomResizedCrop(224),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
              transforms.Normalize((0.485, 0.456, 0.406),
@@ -132,8 +136,8 @@ def main():
     #trainset = torchvision.datasets.ImageFolder('newtrain', transform=transform)
 
     #cifarLoader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
-    cifarLoader = BirdLoader(args) # increase batch size to 32
-    print('BirdLoader initialized')
+    cifarLoader = BirdLoader(args)
+    #print('BirdLoader initialized')
     outputFile = open(args.outputfile, 'w+')
     logFile = open(args.logfile, 'w+')
     net = args.model()
@@ -149,22 +153,35 @@ def main():
 
     #optimizer = optim.Adam(params)
     optimizer = net.optimizer()
-
+    convergeCount = 5
+    currentLoss = float("inf")
+    startTime = datetime.datetime.now()
+    log(logFile, 'Training began at ' + str(startTime))
     for epoch in range(args.epochs):  # loop over the dataset multiple times
+        log(logFile, 'Epoch ' + str(epoch + 1))
         net.adjust_learning_rate(optimizer, epoch, args)
-        train(net, cifarLoader.trainloader, optimizer, criterion, epoch, device, logFile)
-        #if epoch % 1 == 0: # Comment out this part if you want a faster training
-            #test(net, cifarLoader, device, logFile, 'Train')
-          #  test(net, cifarLoader, device, 'Test')
+        loss = train(net, cifarLoader.trainloader, optimizer, criterion, epoch, device, logFile)
+        if epoch % 1 == 0: # Comment out this part if you want a faster training
+            test(net, cifarLoader, device, logFile, 'Train')
+        if abs(currentLoss - loss) < 0.001:
+            convergeCount -= 1
+        else:
+            convergeCount = 5
+        if loss < currentLoss:
+            currentLoss = loss
+            torch.save(net.state_dict(), args.modelfile)
+        if convergeCount == 0:
+            break
 
-    output(net, outputFile, transforms.Compose([transforms.Resize((400, 400)), 
+    output(net, outputFile, transforms.Compose([transforms.Resize(256), 
                             transforms.CenterCrop(224), 
                             transforms.ToTensor(), 
-                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), device)
+                            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]), device)
     #test(net)
-    print("done testing")
+    endTime = datetime.datetime.now()
+    log(logFile, 'Training ended at ' + str(endTime) + '. It trained for ' + str(endTime - startTime))
     #net.save_state_dict('mytraining.pt')
-    torch.save(net.state_dict(), args.modelfile)
+
     log(logFile, 'The log is recorded in ')
     log(logFile, args.logfile)
     log(logFile, 'The output is recorded in ')

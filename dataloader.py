@@ -50,12 +50,14 @@ class BirdLoader(object):
 		super(BirdLoader, self).__init__()
 		transform = transforms.Compose(
             [
-             # TODO: Add data augmentations here
+             # TODO: Use these data augmentations later
              transforms.RandomHorizontalFlip(),
-             transforms.Resize((96, 96)),
+             transforms.Resize((400, 400)),
+             transforms.RandomCrop((224, 224)),
              transforms.ToTensor(),
              #transforms.ColorJitter(),
-             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+             transforms.Normalize((0.485, 0.456, 0.406),
+                                 (0.229, 0.224, 0.225))
              ])
 
 		trainset = BirdDataset('labels.csv', transform)
@@ -63,7 +65,7 @@ class BirdLoader(object):
         #trainset = torchvision.datasets.ImageFolder('./newtrain', transform=transforms)
 		#trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
 		 #                                       download=True, transform=transform)
-		self.trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+		self.trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batchSize, shuffle=True, num_workers=2, pin_memory=True)
 
         #testset = CustomDatasetFromImages(csv_path='data/test/samples.csv',
         	        #                      root_dir='data/test')

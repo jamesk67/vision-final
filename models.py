@@ -30,8 +30,8 @@ class BaseModel(nn.Module):
         for param in self.parameters():
             if param.requires_grad:
                 params.append(param)
-        return optim.Adam(params)
-        #return optim.SGD(self.parameters(), lr=0.001)
+        #return optim.Adam(params)
+        return optim.SGD(params, lr=0.001)
 
     def adjust_learning_rate(self, optimizer, epoch, args):
         lr = args.lr  # TODO: Implement decreasing learning rate's rules
@@ -111,7 +111,7 @@ class AlexNetU(BaseModel):
 class AlexNet0(BaseModel):
     def __init__(self):
         super(AlexNet0, self).__init__()
-        self = torchmodels.alexnet(pretrained=True)
+        self.model = torchmodels.alexnet(pretrained=True)
         for param in self.parameters():
             param.requires_grad = False
 
@@ -119,12 +119,12 @@ class AlexNet0(BaseModel):
         self.model.classifier[6] = nn.Linear(num_features, 555)
 
     def forward(self, x):
-        return self.forward(x)
+        return self.model.forward(x)
 
 class AlexNet1(BaseModel):
     def __init__(self):
         super(AlexNet1, self).__init__()
-        self = torchmodels.alexnet(pretrained=True)
+        self.model = torchmodels.alexnet(pretrained=True)
         for param in self.parameters():
             param.requires_grad = False
 
@@ -133,28 +133,13 @@ class AlexNet1(BaseModel):
         self.model.classifier[4] = nn.Linear(4096, 4096)
 
     def forward(self, x):
-        return self.forward(x)
+        return self.model.forward(x)
 
 class AlexNet2(BaseModel):
     def __init__(self):
         super(AlexNet2, self).__init__()
-        self = torchmodels.alexnet(pretrained=True)
-        for param in self.parameters():
-            param.requires_grad = False
-
-        num_features = self.model.classifier[6].in_features
-        self.model.classifier[6] = nn.Linear(num_features, 555)
-        self.model.classifier[4] = nn.Linear(4096, 4096)
-        self.model.classifier[1] = nn.Linear(256 * 6 * 6, 4096)
-
-    def forward(self, x):
-        return self.forward(x)
-
-class AlexNet3(BaseModel):
-    def __init__(self):
-        super(AlexNet3, self).__init__()
         self.model = torchmodels.alexnet(pretrained=True)
-        for param in self.model.parameters():
+        for param in self.parameters():
             param.requires_grad = False
 
         num_features = self.model.classifier[6].in_features
@@ -165,9 +150,9 @@ class AlexNet3(BaseModel):
     def forward(self, x):
         return self.model.forward(x)
 
-class AlexNet4(BaseModel):
+class AlexNet3(BaseModel):
     def __init__(self):
-        super(AlexNet4, self).__init__()
+        super(AlexNet3, self).__init__()
         self.model = torchmodels.alexnet(pretrained=True)
         for param in self.model.parameters():
             param.requires_grad = False
@@ -183,9 +168,9 @@ class AlexNet4(BaseModel):
     def forward(self, x):
         return self.model.forward(x)
         
-class AlexNet5(BaseModel):
+class AlexNet4(BaseModel):
     def __init__(self):
-        super(AlexNet5, self).__init__()
+        super(AlexNet4, self).__init__()
         self.model = torchmodels.alexnet(pretrained=True)
         for param in self.model.parameters():
             param.requires_grad = False
@@ -204,9 +189,9 @@ class AlexNet5(BaseModel):
     def forward(self, x):
         return self.model.forward(x)
 
-class AlexNet6(BaseModel):
+class AlexNet5(BaseModel):
     def __init__(self):
-        super(AlexNet6, self).__init__()
+        super(AlexNet5, self).__init__()
         self.model = torchmodels.alexnet(pretrained=True)
         for param in self.model.parameters():
             param.requires_grad = False
@@ -226,7 +211,7 @@ class AlexNet6(BaseModel):
     def forward(self, x):
         return self.model.forward(x)
 
-class AlexNet7(BaseModel):
+class AlexNet6(BaseModel):
     def __init__(self):
         super(AlexNet6, self).__init__()
         self.model = torchmodels.alexnet(pretrained=True)
@@ -251,10 +236,157 @@ class AlexNet7(BaseModel):
     def forward(self, x):
         return self.model.forward(x)
 
+class VGG16Net0(BaseModel):
+    def __init__(self):
+        super(VGG16Net0, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
 
-        
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
 
+    def forward(self, x):
+        return self.model.forward(x)
 
+class VGG16Net1(BaseModel):
+    def __init__(self):
+        super(VGG16Net1, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
 
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[3] = nn.Linear(4096, 4096)
 
+    def forward(self, x):
+        return self.model.forward(x)
 
+class VGG16Net2(BaseModel):
+    def __init__(self):
+        super(VGG16Net2, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[3] = nn.Linear(4096, 4096)
+        self.model.classifier[0] = nn.Linear(512 * 7 * 7, 4096)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class VGG16Net3(BaseModel):
+    def __init__(self):
+        super(VGG16Net3, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[3] = nn.Linear(4096, 4096)
+        self.model.classifier[0] = nn.Linear(512 * 7 * 7, 4096)
+        self.model.features[17] = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.model.features[16] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class VGG16Net4(BaseModel):
+    def __init__(self):
+        super(VGG16Net4, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[3] = nn.Linear(4096, 4096)
+        self.model.classifier[0] = nn.Linear(512 * 7 * 7, 4096)
+        self.model.features[17] = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.model.features[16] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+        self.model.features[15] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class VGG16Net5(BaseModel):
+    def __init__(self):
+        super(VGG16Net5, self).__init__()
+        self.model = torchmodels.vgg16(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.classifier[6].in_features
+        self.model.classifier[6] = nn.Linear(num_features, 555)
+        self.model.classifier[3] = nn.Linear(4096, 4096)
+        self.model.classifier[0] = nn.Linear(512 * 7 * 7, 4096)
+        self.model.features[17] = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.model.features[16] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+        self.model.features[15] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+        self.model.features[14] = nn.Conv2d(3, 512, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+# for resnet
+class BasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(BasicBlock, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class ResNet0(BaseModel):
+    def __init__(self):
+        super(ResNet0, self).__init__()
+        self.model = torchmodels.resnet18(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_features, 555)
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+class ResNet1(BaseModel):
+    def __init__(self):
+        super(ResNet1, self).__init__()
+        self.model = torchmodels.resnet18(pretrained=True)
+        for param in self.parameters():
+            param.requires_grad = False
+
+        num_features = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_features, 555)
+        self.model.layer4 = self.model._make_layer(BasicBlock, 512, 2, stride=2)
+
+    def forward(self, x):
+        return self.model.forward(x)
