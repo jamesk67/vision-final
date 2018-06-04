@@ -1,5 +1,4 @@
 from utils import argParser
-from dataloader import CustomDatasetFromImages
 from dataloader import BirdLoader
 
 import matplotlib.pyplot as plt
