@@ -11,6 +11,7 @@ def model_class(class_name):
 
 def argParser():
 	parser = argparse.ArgumentParser(description='PyTorch Vision Final')
+	parser.add_argument('--getoutput', default=False, type=bool)
 	parser.add_argument('--lr', default=0.01, type=float)
 	parser.add_argument('--batchSize', default=256, type=int)
 	parser.add_argument('--epochs', default=50, type=int)

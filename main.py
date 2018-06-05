@@ -110,7 +110,7 @@ def output(net, outputFile, transforms, device):
     with torch.no_grad():
         for file in os.listdir(directory):
             image = Image.open('test/' + file.decode())
-            image = transforms(image)
+            image = transforms(image).to(device)
             image.unsqueeze_(0)
             output = net(image).to(device)
             _, predicted = torch.max(output.data, 1)
@@ -147,41 +147,46 @@ def main():
     #print('The log is recorded in ')
     #print(net.logFile.name)
 
-    criterion = net.criterion().to(device)
-    params = list(net.parameters())
+    
+    if not args.getoutput:
+        criterion = net.criterion().to(device)
+        params = list(net.parameters())
 
-    for p in params:
-        print(p.requires_grad)
+        for p in params:
+            print(p.requires_grad)
 
-    #optimizer = optim.Adam(params)
-    optimizer = net.optimizer()
-    convergeCount = 5
-    currentLoss = float("inf")
-    startTime = datetime.datetime.now()
-    log(logFile, 'Training began at ' + str(startTime))
-    for epoch in range(args.epochs):  # loop over the dataset multiple times
-        log(logFile, 'Epoch ' + str(epoch + 1))
-        net.adjust_learning_rate(optimizer, epoch, args)
-        loss = train(net, cifarLoader.trainloader, optimizer, criterion, epoch, device, logFile)
-        if epoch % 1 == 0: # Comment out this part if you want a faster training
-            test(net, cifarLoader, device, logFile, 'Train')
-        if abs(currentLoss - loss) < 0.001:
-            convergeCount -= 1
-        else:
-            convergeCount = 5
-        if loss < currentLoss:
-            currentLoss = loss
-            torch.save(net.state_dict(), args.modelfile)
-        if convergeCount == 0:
-            break
+        #optimizer = optim.Adam(params)
+        optimizer = net.optimizer()
+        convergeCount = 5
+        currentLoss = float("inf")
+        startTime = datetime.datetime.now()
+        log(logFile, 'Training began at ' + str(startTime))
+        for epoch in range(args.epochs):  # loop over the dataset multiple times
+            log(logFile, 'Epoch ' + str(epoch + 1))
+            net.adjust_learning_rate(optimizer, epoch, args)
+            loss = train(net, cifarLoader.trainloader, optimizer, criterion, epoch, device, logFile)
+            if epoch % 1 == 0: # Comment out this part if you want a faster training
+                test(net, cifarLoader, device, logFile, 'Train')
+            if abs(currentLoss - loss) < 0.001:
+                convergeCount -= 1
+            else:
+                convergeCount = 5
+            if loss < currentLoss:
+                currentLoss = loss
+                torch.save(net.state_dict(), args.modelfile)
+            if convergeCount == 0:
+                break
+        endTime = datetime.datetime.now()
+        log(logFile, 'Training ended at ' + str(endTime) + '. It trained for ' + str(endTime - startTime))
+    else:
+        net.load_state_dict(torch.load(args.modelfile))
 
     output(net, outputFile, transforms.Compose([transforms.Resize(256), 
                             transforms.CenterCrop(224), 
                             transforms.ToTensor(), 
                             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]), device)
     #test(net)
-    endTime = datetime.datetime.now()
-    log(logFile, 'Training ended at ' + str(endTime) + '. It trained for ' + str(endTime - startTime))
+    
     #net.save_state_dict('mytraining.pt')
 
     log(logFile, 'The log is recorded in ')
